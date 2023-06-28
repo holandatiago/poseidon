@@ -5,7 +5,7 @@ import org.knowm.xchart._
 import org.knowm.xchart.style.Styler.ChartTheme
 import org.knowm.xchart.style.markers.SeriesMarkers
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object Plotter {
   implicit def iterableToPlotter[T](it: Iterable[T]): Plotter[T] = Plotter[T](it.toList)
