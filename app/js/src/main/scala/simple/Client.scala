@@ -3,13 +3,10 @@ package simple
 import autowire._
 import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax
-import org.scalajs.dom.html
 import scalatags.JsDom.all._
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits._
-import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
-@JSExportTopLevel("Client")
 object Client {
   val inputBox = input.render
   val outputBox = ul.render
@@ -22,11 +19,10 @@ object Client {
     }
   }
 
-  @JSExport
-  def main(container: html.Div) = {
+  def main(args: Array[String]): Unit = {
     inputBox.onkeyup = (_: dom.Event) => update()
     update()
-    container.appendChild(
+    dom.document.body.appendChild(
       div(
         h1("File Search"),
         inputBox,

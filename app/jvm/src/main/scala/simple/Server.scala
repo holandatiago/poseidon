@@ -36,6 +36,6 @@ object Server {
         }
       }
     Http().bindAndHandle(route, "0.0.0.0", port = port)
-    println("Server started.")
+    println(s"Server started at http://localhost:$port/")
   }
 }

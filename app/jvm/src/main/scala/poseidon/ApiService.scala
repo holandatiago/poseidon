@@ -3,7 +3,7 @@ package poseidon
 import poseidon.Models._
 import poseidon.Plotter._
 
-object Main extends App {
+object ApiService {
   val marketPrices = Client.fetchMarketPrices
   marketPrices.foreach(volsPlotter)
 
