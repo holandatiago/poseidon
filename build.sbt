@@ -1,3 +1,23 @@
+ThisBuild / version := "0.1.0-SNAPSHOT"
+ThisBuild / scalaVersion := "2.13.11"
+
+lazy val all = project.in(file("."))
+  .aggregate(back, front, middle.js, middle.jvm)
+
+lazy val back = project
+  .dependsOn(middle.jvm)
+  .settings()
+
+lazy val front = project
+  .enablePlugins(ScalaJSPlugin)
+  .dependsOn(middle.js)
+  .settings(
+    scalaJSUseMainModuleInitializer := true)
+
+lazy val middle = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
+  .settings()
+
 val app = crossProject(JSPlatform, JVMPlatform)
   .settings(
       version := "0.1",
