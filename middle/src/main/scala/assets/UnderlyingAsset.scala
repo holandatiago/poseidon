@@ -1,9 +1,9 @@
 package assets
 
 case class UnderlyingAsset(
-    symbol: String,
-    currencyPair: (String, String),
-    currentTimestamp: Long,
-    spot: Double,
-    options: List[OptionAsset],
-    bestSurface: models.Surface)
+    symbol: String = null,
+    currencyPair: (String, String) = null,
+    currentTimestamp: Long = Long.MinValue,
+    spot: Double = Double.NaN,
+    options: List[OptionAsset] = null,
+    bestSurface: models.Surface = null)

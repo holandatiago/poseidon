@@ -29,7 +29,7 @@ object Surface {
   }
 
   val paramDefs: List[ParamDef] = List(
-    ParamDef('σ', 0, 0.5, Double.MinValue),
+    ParamDef('σ', 0, 0.5, Double.MaxValue),
     ParamDef('ρ', -1, 0, 1),
     ParamDef('η', 0, 1, 2))
 
