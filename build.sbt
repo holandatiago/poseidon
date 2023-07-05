@@ -6,7 +6,19 @@ lazy val all = project.in(file("."))
 
 lazy val back = project
   .dependsOn(middle.jvm)
-  .settings()
+  .settings(
+    libraryDependencies += "io.circe" %% "circe-generic" % "0.14.5",
+    libraryDependencies += "org.http4s" %% "http4s-dsl" % "0.23.22",
+    libraryDependencies += "org.http4s" %% "http4s-circe" % "0.23.22",
+    libraryDependencies += "org.http4s" %% "http4s-ember-server" % "0.23.22",
+
+    libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.8.0",
+    libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.8.0",
+    libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.5.0",
+    libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % "10.5.0",
+    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.7",
+    libraryDependencies += "org.scalanlp" %% "breeze" % "2.1.0",
+  )
 
 lazy val front = project
   .enablePlugins(ScalaJSPlugin)
