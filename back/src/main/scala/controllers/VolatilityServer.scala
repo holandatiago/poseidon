@@ -23,15 +23,15 @@ object VolatilityServer extends IOApp {
   }
 
   def updateCache(): Unit = {
-    ExchangeClient.fetchMarketPrices.foreach(asset => cache.put(asset.symbol, asset))
+    MarketService.fetchMarketPrices.foreach(asset => cache.put(asset.symbol, asset))
   }
 
   LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext].getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.OFF)
 
   def run(args: List[String]): IO[ExitCode] = {
     Executors
-      .newSingleThreadScheduledExecutor()
-      .scheduleAtFixedRate(() => updateCache(), 0, 10, TimeUnit.SECONDS)
+      .newScheduledThreadPool(10)
+      .scheduleAtFixedRate(() => updateCache(), 0, 1, TimeUnit.SECONDS)
 
     EmberServerBuilder
       .default[IO]

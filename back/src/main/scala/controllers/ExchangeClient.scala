@@ -3,21 +3,18 @@ package controllers
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.{HttpRequest, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import breeze.linalg.DenseVector
-import breeze.optimize.{ApproximateGradientFunction, LBFGS}
-import models.{Assets, Surface}
-import spray.json._
+import models.Assets
+import spray.json.{DefaultJsonProtocol, JsValue, RootJsonFormat}
 
-import scala.concurrent._
-import scala.concurrent.duration.Duration
+import scala.concurrent.{ExecutionContext, Future}
 
 object ExchangeClient extends DefaultJsonProtocol {
   val host: Uri = Uri("https://eapi.binance.com")
   val path: Uri.Path = Uri.Path./("eapi")./("v1")
   implicit val system: ActorSystem = ActorSystem()
-  implicit val executionContext: ExecutionContextExecutor = system.dispatcher
+  implicit val executionContext: ExecutionContext = system.dispatcher
 
   private def makeRequest[T: RootJsonFormat](route: String, params: Map[String, Any] = Map()): Future[T] = {
     val uri = host.withPath(path./(route)).withQuery(Uri.Query(params.view.mapValues(_.toString).toMap))
@@ -25,36 +22,6 @@ object ExchangeClient extends DefaultJsonProtocol {
   }
 
   case class MarketInfo(underlyingInfo: List[Assets.Underlying], optionInfo: List[Assets.Option], timestamp: Long)
-
-  def fetchMarketPrices: List[Assets.Underlying] = {
-    val marketInfoFuture = fetchMarketInfo
-    val volsFuture = fetchOptionPrices
-    val spotsFuture = marketInfoFuture
-      .flatMap(m => Future.sequence(m.underlyingInfo.map(a => fetchUnderlyingPrice(a.symbol))))
-    Await.result(for (marketInfo <- marketInfoFuture; vols <- volsFuture; spots <- spotsFuture) yield {
-      val spotsMap = spots.map(a => a.symbol -> a.spot).toMap
-      val volsMap = vols.groupBy(_.symbol).view.mapValues(_.head).toMap
-      val options = marketInfo.optionInfo.map(option => (option, volsMap(option.symbol)))
-        .map { case (option, optionVol) => option.copy(volatility = optionVol.volatility, spread = optionVol.spread) }
-        .groupBy(_.underlying).withDefaultValue(Nil)
-      val underlyings = marketInfo.underlyingInfo.sortBy(_.symbol)
-        .map(asset => asset.copy(spot = spotsMap(asset.symbol), currentTimestamp = marketInfo.timestamp))
-        .map(asset => asset.withOptionList(options(asset.symbol))).filter(_.isValid)
-        .map(asset => asset.copy(bestSurface = surfaceOptimizer.calibrate(asset.options)))
-      underlyings.foreach(printAsset)
-      underlyings
-    }, Duration.Inf)
-  }
-
-  def printAsset(asset: Assets.Underlying): Unit = {
-    val surface = asset.bestSurface
-    println(s"Calibrated ${asset.symbol}\t${surface.rootMeanSquareError(asset.options)}\t$surface")
-  }
-
-  val surfaceOptimizer: Surface.Optimizer = (startArray, objectiveFunction) => {
-    val function = new ApproximateGradientFunction((x: DenseVector[Double]) => objectiveFunction(x.toArray))
-    new LBFGS[DenseVector[Double]].minimize(function, DenseVector(startArray)).toArray
-  }
 
   def fetchMarketInfo: Future[MarketInfo] = {
     implicit val underlyingInfoCodec: RootJsonFormat[Assets.Underlying] = lift((json: JsValue) => Assets.Underlying(
