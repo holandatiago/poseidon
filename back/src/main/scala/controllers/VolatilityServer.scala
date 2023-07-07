@@ -1,13 +1,10 @@
 package controllers
 
 import assets.UnderlyingAsset
-import breeze.linalg._
-import breeze.optimize._
 import cats.effect.{ExitCode, IO, IOApp}
 import ch.qos.logback.classic.{Level, LoggerContext}
 import com.comcast.ip4s.IpLiteralSyntax
 import io.circe.generic.auto._
-import models.Surface
 import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.dsl.io._
@@ -26,9 +23,7 @@ object VolatilityServer extends IOApp {
   }
 
   def updateCache(): Unit = {
-    ExchangeClient.fetchMarketPrices
-      .map(_.map(asset => asset.copy(bestSurface = calibrate(asset)))
-        .foreach(asset => cache.put(asset.symbol, asset)))(ExchangeClient.executionContext)
+    ExchangeClient.fetchMarketPrices.foreach(asset => cache.put(asset.symbol, asset))
   }
 
   LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext].getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.OFF)
@@ -46,17 +41,5 @@ object VolatilityServer extends IOApp {
       .build
       .use(_ => IO.never)
       .as(ExitCode.Success)
-  }
-
-  def calibrate(asset: UnderlyingAsset): Surface = {
-    val surface = if (asset.options.isEmpty) Surface.fromUnbounded(Array.fill(3)(0D))
-    else Surface.fromUnbounded(minimizeBy(3)(Surface.fromUnbounded(_).rootMeanSquareError(asset)))
-    println(s"Calibrated ${asset.symbol}\t${surface.rootMeanSquareError(asset)}\t$surface")
-    surface
-  }
-
-  def minimizeBy(arraySize: Int)(objectiveFunction: Array[Double] => Double): Array[Double] = {
-    val function = new ApproximateGradientFunction((x: DenseVector[Double]) => objectiveFunction(x.toArray))
-    new LBFGS[DenseVector[Double]].minimize(function, DenseVector(Array.fill(arraySize)(0D))).toArray
   }
 }
