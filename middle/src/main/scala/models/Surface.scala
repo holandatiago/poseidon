@@ -1,7 +1,5 @@
 package models
 
-import assets.OptionAsset
-
 case class Surface(params: List[Double]) {
   val List(sigma, rho, eta) = params
 
@@ -13,7 +11,7 @@ case class Surface(params: List[Double]) {
     math.sqrt(w / t)
   }
 
-  def rootMeanSquareError(options: List[OptionAsset]): Double = {
+  def rootMeanSquareError(options: List[Assets.Option]): Double = {
     val errors = options.map(o => (o.volatility - volatility(o.logMoneyness, o.timeToExpiry)) / o.spread)
     math.sqrt(errors.map(error => error * error).sum / options.size)
   }
@@ -39,7 +37,7 @@ object Surface {
   }
 
   trait Optimizer {
-    def calibrate(options: List[OptionAsset]): Surface = {
+    def calibrate(options: List[Assets.Option]): Surface = {
       val objectiveFunction = Surface.fromUnbounded(_: Array[Double]).rootMeanSquareError(options)
       Surface.fromUnbounded(minimize(Array.fill(paramDefs.size)(0D), objectiveFunction))
     }

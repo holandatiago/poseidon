@@ -1,10 +1,10 @@
 package controllers
 
-import assets.UnderlyingAsset
 import cats.effect.{ExitCode, IO, IOApp}
 import ch.qos.logback.classic.{Level, LoggerContext}
 import com.comcast.ip4s.IpLiteralSyntax
 import io.circe.generic.auto._
+import models.Assets
 import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.dsl.io._
@@ -15,7 +15,7 @@ import java.util.concurrent.{Executors, TimeUnit}
 import scala.collection.concurrent.TrieMap
 
 object VolatilityServer extends IOApp {
-  val cache: TrieMap[String, UnderlyingAsset] = TrieMap()
+  val cache: TrieMap[String, Assets.Underlying] = TrieMap()
 
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "data" => Ok(cache.keySet.toList.sorted)

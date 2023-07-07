@@ -5,10 +5,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import assets._
 import breeze.linalg.DenseVector
 import breeze.optimize.{ApproximateGradientFunction, LBFGS}
-import models.Surface
+import models.{Assets, Surface}
 import spray.json._
 
 import scala.concurrent._
@@ -25,9 +24,9 @@ object ExchangeClient extends DefaultJsonProtocol {
     Http().singleRequest(HttpRequest(uri = uri)).flatMap(Unmarshal(_).to[T])
   }
 
-  case class MarketInfo(underlyingInfo: List[UnderlyingAsset], optionInfo: List[OptionAsset], timestamp: Long)
+  case class MarketInfo(underlyingInfo: List[Assets.Underlying], optionInfo: List[Assets.Option], timestamp: Long)
 
-  def fetchMarketPrices: List[UnderlyingAsset] = {
+  def fetchMarketPrices: List[Assets.Underlying] = {
     val marketInfoFuture = fetchMarketInfo
     val volsFuture = fetchOptionPrices
     val spotsFuture = marketInfoFuture
@@ -47,7 +46,7 @@ object ExchangeClient extends DefaultJsonProtocol {
     }, Duration.Inf)
   }
 
-  def printAsset(asset: UnderlyingAsset): Unit = {
+  def printAsset(asset: Assets.Underlying): Unit = {
     val surface = asset.bestSurface
     println(s"Calibrated ${asset.symbol}\t${surface.rootMeanSquareError(asset.options)}\t$surface")
   }
@@ -58,33 +57,33 @@ object ExchangeClient extends DefaultJsonProtocol {
   }
 
   def fetchMarketInfo: Future[MarketInfo] = {
-    implicit val underlyingInfoCodec: RootJsonFormat[UnderlyingAsset] = lift((json: JsValue) => UnderlyingAsset(
+    implicit val underlyingInfoCodec: RootJsonFormat[Assets.Underlying] = lift((json: JsValue) => Assets.Underlying(
       symbol = fromField[String](json, "underlying"),
       currencyPair = (fromField[String](json, "baseAsset"), fromField[String](json, "quoteAsset"))))
-    implicit val optionInfoCodec: RootJsonFormat[OptionAsset] = lift((json: JsValue) => OptionAsset(
+    implicit val optionInfoCodec: RootJsonFormat[Assets.Option] = lift((json: JsValue) => Assets.Option(
       symbol = fromField[String](json, "symbol"),
       underlying = fromField[String](json, "underlying"),
       termTimestamp = fromField[Long](json, "expiryDate"),
       strike = fromField[BigDecimal](json, "strikePrice").doubleValue,
       side = fromField[String](json, "side")))
     implicit val marketInfoCodec: RootJsonFormat[MarketInfo] = lift((json: JsValue) => MarketInfo(
-      underlyingInfo = fromField[List[UnderlyingAsset]](json, "optionContracts"),
-      optionInfo = fromField[List[OptionAsset]](json, "optionSymbols"),
+      underlyingInfo = fromField[List[Assets.Underlying]](json, "optionContracts"),
+      optionInfo = fromField[List[Assets.Option]](json, "optionSymbols"),
       timestamp = fromField[Long](json, "serverTime")))
     makeRequest[MarketInfo]("exchangeInfo")
   }
 
-  def fetchUnderlyingPrice(underlying: String): Future[UnderlyingAsset] = {
-    implicit val underlyingPriceCodec: RootJsonFormat[UnderlyingAsset] = lift((json: JsValue) => UnderlyingAsset(
+  def fetchUnderlyingPrice(underlying: String): Future[Assets.Underlying] = {
+    implicit val underlyingPriceCodec: RootJsonFormat[Assets.Underlying] = lift((json: JsValue) => Assets.Underlying(
       spot = fromField[BigDecimal](json, "indexPrice").doubleValue))
-    makeRequest[UnderlyingAsset]("index", Map("underlying" -> underlying)).map(_.copy(symbol = underlying))
+    makeRequest[Assets.Underlying]("index", Map("underlying" -> underlying)).map(_.copy(symbol = underlying))
   }
 
-  def fetchOptionPrices: Future[List[OptionAsset]] = {
-    implicit val optionPriceCodec: RootJsonFormat[OptionAsset] = lift((json: JsValue) => OptionAsset(
+  def fetchOptionPrices: Future[List[Assets.Option]] = {
+    implicit val optionPriceCodec: RootJsonFormat[Assets.Option] = lift((json: JsValue) => Assets.Option(
       symbol = fromField[String](json, "symbol"),
       volatility = (fromField[BigDecimal](json, "askIV") + fromField[BigDecimal](json, "bidIV")).doubleValue / 2,
       spread = (fromField[BigDecimal](json, "askIV") - fromField[BigDecimal](json, "bidIV")).doubleValue / 2))
-    makeRequest[List[OptionAsset]]("mark")
+    makeRequest[List[Assets.Option]]("mark")
   }
 }
