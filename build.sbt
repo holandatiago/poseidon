@@ -1,11 +1,8 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "2.13.11"
 
-lazy val app = project.in(file("."))
-  .aggregate(back, front, middle.js, middle.jvm)
-
 lazy val back = project
-  .dependsOn(middle.jvm)
+  .dependsOn(middle)
   .settings(
     libraryDependencies += "io.circe" %% "circe-generic" % "0.14.5",
     libraryDependencies += "org.http4s" %% "http4s-dsl" % "0.23.22",
@@ -22,13 +19,11 @@ lazy val back = project
 
 lazy val front = project
   .enablePlugins(ScalaJSPlugin)
-  .dependsOn(middle.js)
+  .dependsOn(middle)
   .settings(
     scalaJSUseMainModuleInitializer := true)
 
-lazy val middle = crossProject(JSPlatform, JVMPlatform)
-  .crossType(CrossType.Pure)
-  .settings()
+lazy val middle = project
 
 val old = crossProject(JSPlatform, JVMPlatform)
   .settings(
