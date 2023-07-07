@@ -24,15 +24,15 @@ object MarketService {
       val underlyings = marketInfo.underlyingInfo.sortBy(_.symbol)
         .map(asset => asset.copy(spot = spotsMap(asset.symbol), currentTimestamp = marketInfo.timestamp))
         .map(asset => asset.withOptionList(options(asset.symbol))).filter(_.isValid)
-        .map(asset => asset.copy(bestSurface = surfaceOptimizer.calibrate(asset.options)))
+        .map(asset => asset.copy(fittedSurface = surfaceOptimizer.calibrate(asset.options)))
       underlyings.foreach(printAsset)
       underlyings
     }, Duration(30, SECONDS))
   }
 
   def printAsset(asset: UnderlyingAsset): Unit = {
-    val rmse = asset.bestSurface.rootMeanSquareError(asset.options)
-    println(s"Calibrated ${asset.symbol}\t$rmse\t${asset.bestSurface}")
+    val rmse = asset.fittedSurface.rootMeanSquareError(asset.options)
+    println(s"Calibrated ${asset.symbol}\t$rmse\t${asset.fittedSurface}")
   }
 
   val surfaceOptimizer: VolatilitySurface.Optimizer = (objectiveFunction, startArray) => {
