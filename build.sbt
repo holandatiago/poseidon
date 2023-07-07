@@ -1,7 +1,7 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "2.13.11"
 
-lazy val all = project.in(file("."))
+lazy val app = project.in(file("."))
   .aggregate(back, front, middle.js, middle.jvm)
 
 lazy val back = project
@@ -30,10 +30,8 @@ lazy val middle = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .settings()
 
-val app = crossProject(JSPlatform, JVMPlatform)
+val old = crossProject(JSPlatform, JVMPlatform)
   .settings(
-      version := "0.1",
-      scalaVersion := "2.13.11",
       libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.12.0",
       libraryDependencies += "com.lihaoyi" %%% "autowire" % "0.3.3",
       libraryDependencies += "com.lihaoyi" %%% "upickle" % "3.1.0")
@@ -54,10 +52,10 @@ val app = crossProject(JSPlatform, JVMPlatform)
 
 val copyMainDirectoryJS = taskKey[Unit]("Copy main JS directory to JVM")
 copyMainDirectoryJS := IO.copyDirectory(
-    (app.js / Compile / fullLinkJS / scalaJSLinkerOutputDirectory).value,
-    (app.jvm / Compile / classDirectory).value)
+    (old.js / Compile / fullLinkJS / scalaJSLinkerOutputDirectory).value,
+    (old.jvm / Compile / classDirectory).value)
 
 val compileAll = taskKey[Unit]("Compile JS and JVM")
 compileAll := copyMainDirectoryJS
-  .dependsOn(app.jvm / Compile / compile)
-  .dependsOn(app.js / Compile / fullLinkJS).value
+  .dependsOn(old.jvm / Compile / compile)
+  .dependsOn(old.js / Compile / fullLinkJS).value
