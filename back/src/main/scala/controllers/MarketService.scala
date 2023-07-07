@@ -27,7 +27,7 @@ object MarketService {
         .map(asset => asset.copy(bestSurface = surfaceOptimizer.calibrate(asset.options)))
       underlyings.foreach(printAsset)
       underlyings
-    }, Duration(10, SECONDS))
+    }, Duration(30, SECONDS))
   }
 
   def printAsset(asset: Assets.Underlying): Unit = {

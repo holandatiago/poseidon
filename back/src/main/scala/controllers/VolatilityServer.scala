@@ -11,19 +11,20 @@ import org.http4s.dsl.io._
 import org.http4s.ember.server.EmberServerBuilder
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.util.concurrent.{Executors, TimeUnit}
-import scala.collection.concurrent.TrieMap
+import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
+import scala.jdk.CollectionConverters._
 
 object VolatilityServer extends IOApp {
-  val cache: TrieMap[String, Assets.Underlying] = TrieMap()
+  val cache = new ConcurrentHashMap[String, Assets.Underlying]()
 
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "data" => Ok(cache.keySet.toList.sorted)
-    case GET -> Root / "data" / asset => Ok(cache(asset))
+    case GET -> Root / "data" => Ok(cache.keySet.asScala.toList.sorted)
+    case GET -> Root / "data" / asset => Option(cache.get(asset)).map(Ok(_)).getOrElse(NotFound())
   }
 
   def updateCache(): Unit = {
-    MarketService.fetchMarketPrices.foreach(asset => cache.put(asset.symbol, asset))
+    MarketService.fetchMarketPrices.foreach(asset => cache.compute(asset.symbol, (_, oldAsset) =>
+      Option(oldAsset).filter(_.currentTimestamp > asset.currentTimestamp).getOrElse(asset)))
   }
 
   LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext].getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.OFF)
