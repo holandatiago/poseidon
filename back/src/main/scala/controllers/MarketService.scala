@@ -2,7 +2,7 @@ package controllers
 
 import breeze.linalg.DenseVector
 import breeze.optimize.{ApproximateGradientFunction, LBFGS}
-import models.{Assets, Surface}
+import models.{UnderlyingAsset, VolatilitySurface}
 
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -10,7 +10,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 object MarketService {
   implicit val executionContext: ExecutionContext = ExchangeClient.executionContext
 
-  def fetchMarketPrices: List[Assets.Underlying] = {
+  def fetchMarketPrices: List[UnderlyingAsset] = {
     val marketInfoFuture = ExchangeClient.fetchMarketInfo
     val volsFuture = ExchangeClient.fetchOptionPrices
     val spotsFuture = marketInfoFuture
@@ -30,12 +30,12 @@ object MarketService {
     }, Duration(30, SECONDS))
   }
 
-  def printAsset(asset: Assets.Underlying): Unit = {
-    val surface = asset.bestSurface
-    println(s"Calibrated ${asset.symbol}\t${surface.rootMeanSquareError(asset.options)}\t$surface")
+  def printAsset(asset: UnderlyingAsset): Unit = {
+    val rmse = asset.bestSurface.rootMeanSquareError(asset.options)
+    println(s"Calibrated ${asset.symbol}\t$rmse\t${asset.bestSurface}")
   }
 
-  val surfaceOptimizer: Surface.Optimizer = (startArray, objectiveFunction) => {
+  val surfaceOptimizer: VolatilitySurface.Optimizer = (objectiveFunction, startArray) => {
     val function = new ApproximateGradientFunction((x: DenseVector[Double]) => objectiveFunction(x.toArray))
     new LBFGS[DenseVector[Double]].minimize(function, DenseVector(startArray)).toArray
   }

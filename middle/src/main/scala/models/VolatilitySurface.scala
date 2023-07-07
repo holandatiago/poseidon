@@ -1,6 +1,6 @@
 package models
 
-case class Surface(params: List[Double]) {
+case class VolatilitySurface(params: List[Double]) {
   val List(sigma, rho, eta) = params
 
   def volatility(k: Double, t: Double): Double = {
@@ -11,13 +11,13 @@ case class Surface(params: List[Double]) {
     math.sqrt(w / t)
   }
 
-  def rootMeanSquareError(options: List[Assets.Option]): Double = {
+  def rootMeanSquareError(options: List[OptionContract]): Double = {
     val errors = options.map(o => (o.volatility - volatility(o.logMoneyness, o.timeToExpiry)) / o.spread)
     math.sqrt(errors.map(error => error * error).sum / options.size)
   }
 }
 
-object Surface {
+object VolatilitySurface {
   case class ParamDef(char: Char, min: Double, mean: Double, max: Double) {
     def bound(unbounded: Double): Double = (min, max) match {
       case (Double.MinValue, Double.MaxValue) => mean + unbounded
@@ -32,16 +32,16 @@ object Surface {
     ParamDef('ρ', -1, 0, 1),
     ParamDef('η', 0, 1, 2))
 
-  def fromUnbounded(unboundedParams: Array[Double]): Surface = {
-    Surface(paramDefs.zip(unboundedParams).map { case (paramDef, unbounded) => paramDef.bound(unbounded) })
+  def fromUnbounded(unboundedParams: Array[Double]): VolatilitySurface = {
+    apply(paramDefs.zip(unboundedParams).map { case (paramDef, unbounded) => paramDef.bound(unbounded) })
   }
 
   trait Optimizer {
-    def calibrate(options: List[Assets.Option]): Surface = {
-      val objectiveFunction = Surface.fromUnbounded(_: Array[Double]).rootMeanSquareError(options)
-      Surface.fromUnbounded(minimize(Array.fill(paramDefs.size)(0D), objectiveFunction))
+    def calibrate(options: List[OptionContract]): VolatilitySurface = {
+      val objectiveFunction = fromUnbounded(_: Array[Double]).rootMeanSquareError(options)
+      fromUnbounded(minimize(objectiveFunction, Array.fill(paramDefs.size)(0D)))
     }
 
-    def minimize(startArray: Array[Double], objectiveFunction: Array[Double] => Double): Array[Double]
+    def minimize(objectiveFunction: Array[Double] => Double, startArray: Array[Double]): Array[Double]
   }
 }

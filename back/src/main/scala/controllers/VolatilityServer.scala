@@ -4,7 +4,7 @@ import cats.effect.{ExitCode, IO, IOApp}
 import ch.qos.logback.classic.{Level, LoggerContext}
 import com.comcast.ip4s.IpLiteralSyntax
 import io.circe.generic.auto._
-import models.Assets
+import models.UnderlyingAsset
 import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.dsl.io._
@@ -15,7 +15,7 @@ import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 import scala.jdk.CollectionConverters._
 
 object VolatilityServer extends IOApp {
-  val cache = new ConcurrentHashMap[String, Assets.Underlying]()
+  val cache = new ConcurrentHashMap[String, UnderlyingAsset]()
 
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "data" => Ok(cache.keySet.asScala.toList.sorted)
