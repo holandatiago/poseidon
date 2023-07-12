@@ -11,22 +11,22 @@ object MarketService {
   implicit val executionContext: ExecutionContext = ExchangeClient.executionContext
 
   def fetchMarketPrices: List[UnderlyingAsset] = {
-    val marketInfoFuture = ExchangeClient.fetchMarketInfo
-    val volsFuture = ExchangeClient.fetchOptionPrices
+    val marketInfoFuture = ExchangeClient.fetchMarketDef
+    val volsFuture = ExchangeClient.fetchOptionVols
     val spotsFuture = marketInfoFuture
-      .flatMap(m => Future.sequence(m.underlyingInfo.map(a => ExchangeClient.fetchUnderlyingPrice(a.symbol))))
+      .flatMap(m => Future.sequence(m.assetDefs.map(a => ExchangeClient.fetchAssetPrice(a.symbol))))
     Await.result(for (marketInfo <- marketInfoFuture; vols <- volsFuture; spots <- spotsFuture) yield {
       val spotsMap = spots.map(a => a.symbol -> a.spot).toMap
       val volsMap = vols.groupBy(_.symbol).view.mapValues(_.head).toMap
-      val options = marketInfo.optionInfo.map(option => (option, volsMap(option.symbol)))
+      val options = marketInfo.optionDefs.map(option => (option, volsMap(option.symbol)))
         .map { case (option, optionVol) => option.copy(volatility = optionVol.volatility, spread = optionVol.spread) }
         .groupBy(_.underlying).withDefaultValue(Nil)
-      val underlyings = marketInfo.underlyingInfo.sortBy(_.symbol)
+      val assets = marketInfo.assetDefs.sortBy(_.symbol)
         .map(asset => asset.copy(spot = spotsMap(asset.symbol), currentTimestamp = marketInfo.timestamp))
         .map(asset => asset.withOptionList(options(asset.symbol))).filter(_.isValid)
         .map(asset => asset.copy(fittedSurface = surfaceOptimizer.calibrate(asset.options)))
-      underlyings.foreach(printAsset)
-      underlyings
+      assets.foreach(printAsset)
+      assets
     }, Duration(30, SECONDS))
   }
 

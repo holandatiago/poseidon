@@ -21,33 +21,33 @@ object ExchangeClient extends DefaultJsonProtocol {
     Http().singleRequest(HttpRequest(uri = uri)).flatMap(Unmarshal(_).to[T])
   }
 
-  case class MarketInfo(underlyingInfo: List[UnderlyingAsset], optionInfo: List[OptionContract], timestamp: Long)
+  case class MarketDef(assetDefs: List[UnderlyingAsset], optionDefs: List[OptionContract], timestamp: Long)
 
-  def fetchMarketInfo: Future[MarketInfo] = {
-    implicit val underlyingInfoCodec: RootJsonFormat[UnderlyingAsset] = lift((json: JsValue) => UnderlyingAsset(
+  def fetchMarketDef: Future[MarketDef] = {
+    implicit val assetDefCodec: RootJsonFormat[UnderlyingAsset] = lift((json: JsValue) => UnderlyingAsset(
       symbol = fromField[String](json, "underlying"),
       currencyPair = (fromField[String](json, "baseAsset"), fromField[String](json, "quoteAsset"))))
-    implicit val optionInfoCodec: RootJsonFormat[OptionContract] = lift((json: JsValue) => OptionContract(
+    implicit val optionDefCodec: RootJsonFormat[OptionContract] = lift((json: JsValue) => OptionContract(
       symbol = fromField[String](json, "symbol"),
       underlying = fromField[String](json, "underlying"),
       termTimestamp = fromField[Long](json, "expiryDate"),
       strike = fromField[BigDecimal](json, "strikePrice").doubleValue,
       side = fromField[String](json, "side")))
-    implicit val marketInfoCodec: RootJsonFormat[MarketInfo] = lift((json: JsValue) => MarketInfo(
-      underlyingInfo = fromField[List[UnderlyingAsset]](json, "optionContracts"),
-      optionInfo = fromField[List[OptionContract]](json, "optionSymbols"),
+    implicit val marketDefCodec: RootJsonFormat[MarketDef] = lift((json: JsValue) => MarketDef(
+      assetDefs = fromField[List[UnderlyingAsset]](json, "optionContracts"),
+      optionDefs = fromField[List[OptionContract]](json, "optionSymbols"),
       timestamp = fromField[Long](json, "serverTime")))
-    makeRequest[MarketInfo]("exchangeInfo")
+    makeRequest[MarketDef]("exchangeInfo")
   }
 
-  def fetchUnderlyingPrice(underlying: String): Future[UnderlyingAsset] = {
-    implicit val underlyingPriceCodec: RootJsonFormat[UnderlyingAsset] = lift((json: JsValue) => UnderlyingAsset(
+  def fetchAssetPrice(symbol: String): Future[UnderlyingAsset] = {
+    implicit val assetPriceCodec: RootJsonFormat[UnderlyingAsset] = lift((json: JsValue) => UnderlyingAsset(
       spot = fromField[BigDecimal](json, "indexPrice").doubleValue))
-    makeRequest[UnderlyingAsset]("index", Map("underlying" -> underlying)).map(_.copy(symbol = underlying))
+    makeRequest[UnderlyingAsset]("index", Map("underlying" -> symbol)).map(_.copy(symbol = symbol))
   }
 
-  def fetchOptionPrices: Future[List[OptionContract]] = {
-    implicit val optionPriceCodec: RootJsonFormat[OptionContract] = lift((json: JsValue) => OptionContract(
+  def fetchOptionVols: Future[List[OptionContract]] = {
+    implicit val optionVolCodec: RootJsonFormat[OptionContract] = lift((json: JsValue) => OptionContract(
       symbol = fromField[String](json, "symbol"),
       volatility = (fromField[BigDecimal](json, "askIV") + fromField[BigDecimal](json, "bidIV")).doubleValue / 2,
       spread = (fromField[BigDecimal](json, "askIV") - fromField[BigDecimal](json, "bidIV")).doubleValue / 2))
