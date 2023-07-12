@@ -7,9 +7,12 @@ import io.circe.generic.auto._
 import models.UnderlyingAsset
 import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityEncoder._
+import org.http4s.scalatags._
 import org.http4s.dsl.io._
 import org.http4s.ember.server.EmberServerBuilder
 import org.slf4j.{Logger, LoggerFactory}
+import scalatags.Text.TypedTag
+import scalatags.Text.all._
 
 import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 import scala.jdk.CollectionConverters._
@@ -17,7 +20,13 @@ import scala.jdk.CollectionConverters._
 object VolatilityServer extends IOApp {
   val cache = new ConcurrentHashMap[String, UnderlyingAsset]()
 
+  val indexPage: TypedTag[String] =
+    html(
+      head(link(rel := "stylesheet", href := "https://cdnjs.cloudflare.com/ajax/libs/pure/0.5.0/pure-min.css")),
+      body(p("Hello")))
+
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
+    case GET -> Root => Ok(indexPage)
     case GET -> Root / "data" => Ok(cache.keySet.asScala.toList.sorted)
     case GET -> Root / "data" / asset => Option(cache.get(asset)).map(Ok(_)).getOrElse(NotFound())
   }

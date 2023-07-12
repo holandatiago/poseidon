@@ -7,7 +7,9 @@ lazy val back = project
     libraryDependencies += "io.circe" %% "circe-generic" % "0.14.5",
     libraryDependencies += "org.http4s" %% "http4s-dsl" % "0.23.22",
     libraryDependencies += "org.http4s" %% "http4s-circe" % "0.23.22",
+    libraryDependencies += "org.http4s" %% "http4s-scalatags" % "0.25.2",
     libraryDependencies += "org.http4s" %% "http4s-ember-server" % "0.23.22",
+    libraryDependencies += "com.lihaoyi" %% "scalatags" % "0.12.0",
 
     libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.8.0",
     libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.8.0",
