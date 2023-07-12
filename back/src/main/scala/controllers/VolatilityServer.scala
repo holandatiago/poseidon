@@ -5,11 +5,11 @@ import ch.qos.logback.classic.{Level, LoggerContext}
 import com.comcast.ip4s.IpLiteralSyntax
 import io.circe.generic.auto._
 import models.UnderlyingAsset
-import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityEncoder._
-import org.http4s.scalatags._
 import org.http4s.dsl.io._
 import org.http4s.ember.server.EmberServerBuilder
+import org.http4s.scalatags._
+import org.http4s.{HttpRoutes, StaticFile}
 import org.slf4j.{Logger, LoggerFactory}
 import scalatags.Text.TypedTag
 import scalatags.Text.all._
@@ -23,10 +23,11 @@ object VolatilityServer extends IOApp {
   val indexPage: TypedTag[String] =
     html(
       head(link(rel := "stylesheet", href := "https://cdnjs.cloudflare.com/ajax/libs/pure/0.5.0/pure-min.css")),
-      body(p("Hello")))
+      body(script(src := "main.js")))
 
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(indexPage)
+    case GET -> Root / file => StaticFile.fromResource[IO](file).getOrElseF(NotFound())
     case GET -> Root / "data" => Ok(cache.keySet.asScala.toList.sorted)
     case GET -> Root / "data" / asset => Option(cache.get(asset)).map(Ok(_)).getOrElse(NotFound())
   }
@@ -40,8 +41,8 @@ object VolatilityServer extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] = {
     Executors
-      .newScheduledThreadPool(10)
-      .scheduleAtFixedRate(() => updateCache(), 0, 1, TimeUnit.SECONDS)
+      .newScheduledThreadPool(1)
+      .scheduleAtFixedRate(() => updateCache(), 0, 10, TimeUnit.SECONDS)
 
     EmberServerBuilder
       .default[IO]
