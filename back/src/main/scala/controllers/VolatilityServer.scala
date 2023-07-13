@@ -22,7 +22,7 @@ object VolatilityServer extends IOApp {
 
   val indexPage: TypedTag[String] =
     html(
-      head(link(rel := "stylesheet", href := "https://cdnjs.cloudflare.com/ajax/libs/pure/0.5.0/pure-min.css")),
+      head(script(src := "https://cdn.plot.ly/plotly-basic-2.24.2.min.js")),
       body(script(src := "main.js")))
 
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
@@ -41,7 +41,7 @@ object VolatilityServer extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] = {
     Executors
-      .newScheduledThreadPool(1)
+      .newSingleThreadScheduledExecutor()
       .scheduleAtFixedRate(() => updateCache(), 0, 10, TimeUnit.SECONDS)
 
     EmberServerBuilder

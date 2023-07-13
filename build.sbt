@@ -17,13 +17,18 @@ lazy val back = project
     libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % "10.5.0",
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.7",
     libraryDependencies += "org.scalanlp" %% "breeze" % "2.1.0",
+    Compile / resourceDirectory := (front / Compile / fullLinkJS / scalaJSLinkerOutputDirectory).value,
+    Compile / unmanagedResources := (Compile / unmanagedResources).dependsOn(front / Compile / fullLinkJS).value,
   )
 
 lazy val front = project
   .enablePlugins(ScalaJSPlugin)
   .dependsOn(middle)
   .settings(
-    scalaJSUseMainModuleInitializer := true)
+    scalaJSUseMainModuleInitializer := true,
+    libraryDependencies += "com.raquo" %%% "laminar" % "15.0.1",
+    libraryDependencies += "io.circe" %%% "circe-generic" % "0.14.5",
+  )
 
 lazy val middle = project
 
