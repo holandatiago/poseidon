@@ -28,6 +28,8 @@ lazy val front = project
     scalaJSUseMainModuleInitializer := true,
     libraryDependencies += "com.raquo" %%% "laminar" % "15.0.1",
     libraryDependencies += "io.circe" %%% "circe-generic" % "0.14.5",
+    libraryDependencies += "io.circe" %%% "circe-parser" % "0.14.5",
+    Compile / unmanagedSourceDirectories ++= (middle / Compile / unmanagedSourceDirectories).value,
   )
 
 lazy val middle = project

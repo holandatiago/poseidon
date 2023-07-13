@@ -27,8 +27,8 @@ object VolatilityServer extends IOApp {
 
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(indexPage)
-    case GET -> Root / file => StaticFile.fromResource[IO](file).getOrElseF(NotFound())
     case GET -> Root / "data" => Ok(cache.keySet.asScala.toList.sorted)
+    case GET -> Root / file => StaticFile.fromResource[IO](file).getOrElseF(NotFound())
     case GET -> Root / "data" / asset => Option(cache.get(asset)).map(Ok(_)).getOrElse(NotFound())
   }
 
@@ -41,8 +41,10 @@ object VolatilityServer extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] = {
     Executors
-      .newSingleThreadScheduledExecutor()
-      .scheduleAtFixedRate(() => updateCache(), 0, 10, TimeUnit.SECONDS)
+      .newSingleThreadExecutor()
+      .submit((() => updateCache()): Runnable)
+//      .newSingleThreadScheduledExecutor()
+//      .scheduleAtFixedRate(() => updateCache(), 0, 10, TimeUnit.SECONDS)
 
     EmberServerBuilder
       .default[IO]
