@@ -5,7 +5,7 @@ import com.raquo.laminar.api.L._
 import io.circe.Decoder
 import io.circe.generic.auto._
 import io.circe.parser.decode
-import models.{OptionContract, UnderlyingAsset}
+import models.UnderlyingAsset
 import org.scalajs.dom
 
 import scala.scalajs.js
@@ -18,9 +18,9 @@ object Client {
     asset.toList.flatMap(_.options).map(_.termTimestamp).distinct.sorted
   }
 
-  val optionsSignal: Signal[List[OptionContract]] = assetVar.signal.combineWith(termVar).map {
-    case (Some(asset), Some(term)) => asset.options.filter(_.termTimestamp == term)
-    case _ => Nil
+  val optionsSignal: Signal[Option[(UnderlyingAsset, Long)]] = assetVar.signal.combineWith(termVar).map {
+    case (Some(asset), Some(term)) => Some((asset, term))
+    case _ => None
   }
 
   def main(args: Array[String]): Unit = {

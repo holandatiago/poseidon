@@ -13,6 +13,7 @@ import org.http4s.{HttpRoutes, StaticFile}
 import org.slf4j.{Logger, LoggerFactory}
 import scalatags.Text.TypedTag
 import scalatags.Text.all._
+import scalatags.Text.tags2.title
 
 import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 import scala.jdk.CollectionConverters._
@@ -22,7 +23,8 @@ object VolatilityServer extends IOApp {
 
   val indexPage: TypedTag[String] =
     html(
-      head(script(src := "https://cdn.plot.ly/plotly-basic-2.24.2.min.js")),
+      head(title("Poseidon"), script(src := "https://cdn.plot.ly/plotly-basic-2.24.2.min.js"),
+        link(rel := "stylesheet", href := "https://cdnjs.cloudflare.com/ajax/libs/pure/0.5.0/pure-min.css")),
       body(script(src := "main.js")))
 
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
