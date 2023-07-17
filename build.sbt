@@ -3,6 +3,7 @@ ThisBuild / scalaVersion := "2.13.11"
 Compile / run := (back / Compile / run).evaluated
 
 lazy val back = project
+  .enablePlugins(JavaAppPackaging)
   .dependsOn(middle)
   .settings(
     libraryDependencies += "io.circe" %% "circe-generic" % "0.14.5",
