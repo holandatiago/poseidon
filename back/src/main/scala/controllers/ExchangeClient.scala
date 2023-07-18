@@ -3,7 +3,7 @@ package controllers
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.{HttpRequest, Uri}
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import models.{OptionContract, UnderlyingAsset}
 import spray.json.{DefaultJsonProtocol, JsValue, RootJsonFormat}
@@ -18,7 +18,16 @@ object ExchangeClient extends DefaultJsonProtocol {
 
   private def makeRequest[T: RootJsonFormat](route: String, params: Map[String, Any] = Map()): Future[T] = {
     val uri = host.withPath(path./(route)).withQuery(Uri.Query(params.view.mapValues(_.toString).toMap))
-    Http().singleRequest(HttpRequest(uri = uri)).flatMap(Unmarshal(_).to[T])
+    Http().singleRequest(HttpRequest(uri = uri)).flatMap {
+      case response@HttpResponse(StatusCodes.OK, _, _, _) => Unmarshal(response).to[T].map { obj =>
+        println(s"OK REQUEST => ${obj.toString.take(100)}")
+        obj
+      }
+      case response => Unmarshal(response).to[JsValue].map { jsValue =>
+        println(s"BAD REQUEST => ${jsValue.toString.take(100)}")
+        jsValue.convertTo[T]
+      }
+    }
   }
 
   case class MarketDef(assetDefs: List[UnderlyingAsset], optionDefs: List[OptionContract], timestamp: Long)
