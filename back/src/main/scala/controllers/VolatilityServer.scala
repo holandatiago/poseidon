@@ -1,7 +1,7 @@
 package controllers
 
 import cats.effect.{ExitCode, IO, IOApp}
-import ch.qos.logback.classic.{Level, LoggerContext}
+//import ch.qos.logback.classic.{Level, LoggerContext}
 import com.comcast.ip4s.IpLiteralSyntax
 import io.circe.generic.auto._
 import models.UnderlyingAsset
@@ -10,7 +10,7 @@ import org.http4s.dsl.io._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.scalatags._
 import org.http4s.{HttpRoutes, StaticFile}
-import org.slf4j.{Logger, LoggerFactory}
+//import org.slf4j.{Logger, LoggerFactory}
 import scalatags.Text.TypedTag
 import scalatags.Text.all._
 import scalatags.Text.tags2.title
@@ -39,7 +39,7 @@ object VolatilityServer extends IOApp {
       Option(oldAsset).filter(_.currentTimestamp > asset.currentTimestamp).getOrElse(asset)))
   }
 
-  LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext].getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.OFF)
+//  LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext].getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.OFF)
 
   def run(args: List[String]): IO[ExitCode] = {
     Executors
@@ -48,10 +48,12 @@ object VolatilityServer extends IOApp {
 //      .newSingleThreadScheduledExecutor()
 //      .scheduleAtFixedRate(() => updateCache(), 0, 10, TimeUnit.SECONDS)
 
+    println("SYSTEM PORT -----> " + sys.env.get("PORT").toString)
+
     EmberServerBuilder
       .default[IO]
       .withHost(ipv4"0.0.0.0")
-      .withPort(port"8080")
+      .withPort(com.comcast.ip4s.Port.fromString(sys.env.getOrElse("PORT", "80")).get)
       .withHttpApp(service.orNotFound)
       .build
       .use(_ => IO.never)
