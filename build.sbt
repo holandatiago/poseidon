@@ -1,13 +1,11 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "2.13.11"
-Compile / run := (back / Compile / run)
-  .dependsOn(
-      Def.task { IO.copyDirectory(
-          (front / Compile / fullLinkJS / scalaJSLinkerOutputDirectory).value,
-          (back / Compile / classDirectory).value) }
-        .dependsOn(back / Compile / compile)
-        .dependsOn(front / Compile / fullLinkJS))
-  .evaluated
+Compile / run := (back / Compile / run).dependsOn(Compile / compile).evaluated
+Compile / compile := (back / Compile / compile)
+  .dependsOn(Def.task { IO.copyDirectory(
+      (front / Compile / fullLinkJS / scalaJSLinkerOutputDirectory).value,
+      (back / Compile / resourceDirectory).value) }
+    .dependsOn(front / Compile / fullLinkJS)).value
 
 lazy val back = project
   .enablePlugins(JavaAppPackaging)

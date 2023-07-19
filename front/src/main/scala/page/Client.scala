@@ -73,7 +73,7 @@ object Client {
             children <-- termsSignal.map(_.map(createSelectOption)),
             onChange.mapToValue.map(Some(_).map(_.toLong)) --> termVar))),
       Plot.renderDataChart(),
-      div(cls := "d-flex justify-content-between flex-md-nowrap align-items-center",
+      div(cls := "d-flex justify-content-between flex-md-wrap align-items-center",
         a(cls := "text-muted", "Data provided by Binance", target := "_blank",
           href <-- optionsSignal.map(_.map(createDataProvidedText).getOrElse(""))),
         a(cls := "text-muted link-underline link-underline-opacity-0",
