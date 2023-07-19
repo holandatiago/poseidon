@@ -10,5 +10,63 @@
 </head>
 <body>
 
+<div class="navbar sticky-top bg-dark shadow p-1" data-bs-theme="dark">
+    <a class="navbar-brand d-flex align-items-center gap-2 px-3 fs-7" href="">
+        <img width="32" height="32" src="images/trident-white.png">
+        NETTUNO
+    </a>
+</div>
+
+<div class="container-fluid">
+    <div class="row vh-100">
+        <div class="sidebar bg-body-tertiary border border-right col-md-3 col-lg-2 p-1">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                <input type="radio" class="btn-check" name="options" id="option1">
+                <label class="nav-link btn btn-secondary d-flex align-items-center gap-2" for="option1">
+                    <img src="https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/bnb.png">
+                    BNBUSDT
+                </label>
+                </li>
+                <li class="nav-item">
+                <input type="radio" class="btn-check" name="options" id="option2">
+                <label class="nav-link btn btn-secondary d-flex align-items-center gap-2" for="option2">
+                    <img src="https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/btc.png">
+                    BTCUSDT
+                </label>
+                </li>
+                <li class="nav-item">
+                <input type="radio" class="btn-check" name="options" id="option3">
+                <label class="nav-link btn btn-secondary d-flex align-items-center gap-2" for="option3">
+                    <img src="https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/eth.png">
+                    ETHUSDT
+                </label>
+                </li>
+                <li class="nav-item">
+                <input type="radio" class="btn-check" name="options" id="option4">
+                <label class="nav-link btn btn-secondary d-flex align-items-center gap-2" for="option4">
+                    <img src="https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/xrp.png">
+                    XRPUSDT
+                </label>
+            </ul>
+        </div>
+
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Volatility Smile</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <select class="form-select">
+                        <option value="12">2023-08-04</option>
+                        <option value="25">2023-08-25</option>
+                        <option value="36">2023-08-29</option>
+                    </select>
+                </div>
+            </div>
+
+            <canvas class="my-4 w-100" id="myChart" width="900" height="500"></canvas>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
