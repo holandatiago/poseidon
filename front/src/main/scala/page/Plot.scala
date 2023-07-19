@@ -10,10 +10,11 @@ object Plot {
   val config = literal(displayModeBar = false, scrollZoom = true, responsive = true)
 
   val layout = literal(
-    title = literal(text = "Volatility Smile", automargin = true),
+//    title = literal(text = "Volatility Smile", automargin = true),
+    legend = literal(orientation = "h", yanchor = "top", xanchor = "center", y = 1.1, x = .5),
     dragmode = "pan", margin = literal(b = 0, l = 0, r = 0, t = 0),
     xaxis = literal(title = "logMoneyness", automargin = true, range = js.Array(-1, 1), scaleanchor = "y", scaleratio = 2),
-    yaxis = literal(title = "volatility", automargin = true, range = js.Array(0, 2), autorange = true, constraintoward = "bottom"))
+    yaxis = literal(title = "volatility", automargin = true, range = js.Array(0, 1), autorange = false, constraintoward = "bottom"))
 
   val traces = js.Array(
     literal(name = "CALL", `type` = "scatter", mode = "markers", marker = literal(color = "seagreen"),
@@ -28,7 +29,7 @@ object Plot {
     plot.amend(Client.optionsSignal --> (_.foreach { case (asset, term) =>
       val (calls, puts) = asset.options.filter(_.termTimestamp == term).toJSArray.partition(_.side == "CALL")
       val timeToExpiry = (term - asset.currentTimestamp) / (365 * 24 * 60 * 60 * 1000D)
-      val range = Range.BigDecimal.inclusive(-1, 1, .01).toJSArray.map(_.toDouble)
+      val range = Range.BigDecimal.inclusive(-2, 2, .01).toJSArray.map(_.toDouble)
       val fitted = range.map(asset.fittedSurface.volatility(_, timeToExpiry))
       global.Plotly.animate(plot.ref, literal(data = js.Array(
         literal(x = calls.map(_.logMoneyness), y = calls.map(_.volatility), text = calls.map(_.symbol),

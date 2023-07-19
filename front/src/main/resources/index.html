@@ -10,8 +10,8 @@
 </head>
 <body>
 
-<div class="navbar sticky-top bg-dark shadow p-1" data-bs-theme="dark">
-    <a class="navbar-brand d-flex align-items-center gap-2 px-3 fs-7" href="">
+<div class="navbar sticky-top bg-dark shadow p-1">
+    <a class="navbar-brand text-white d-flex align-items-center gap-2 px-3 fs-7" href="">
         <img width="32" height="32" src="images/trident-white.png">
         NETTUNO
     </a>
@@ -54,8 +54,9 @@
         <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Volatility Smile</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <select class="form-select">
+                <div class="d-flex align-items-center gap-2">
+                    <label for="floatingSelect">Expiry:</label>
+                    <select class="form-select" id="floatingSelect">
                         <option value="12">2023-08-04</option>
                         <option value="25">2023-08-25</option>
                         <option value="36">2023-08-29</option>

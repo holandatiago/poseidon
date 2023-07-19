@@ -11,9 +11,9 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.scalatags._
 import org.http4s.{HttpRoutes, StaticFile}
 //import org.slf4j.{Logger, LoggerFactory}
+import com.comcast.ip4s.Port
 import scalatags.Text.TypedTag
 import scalatags.Text.all._
-import scalatags.Text.tags2.title
 
 import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 import scala.jdk.CollectionConverters._
@@ -23,8 +23,18 @@ object VolatilityServer extends IOApp {
 
   val indexPage: TypedTag[String] =
     html(
-      head(title("Poseidon"), script(src := "https://cdn.plot.ly/plotly-basic-2.24.2.min.js"),
-        link(rel := "stylesheet", href := "https://cdnjs.cloudflare.com/ajax/libs/pure/0.5.0/pure-min.css")),
+      head(
+        script(
+          src := "https://cdn.plot.ly/plotly-basic-2.24.2.min.js"),
+        script(
+          src := "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js",
+          integrity := "sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz",
+          crossorigin := "anonymous"),
+        link(
+          rel := "stylesheet",
+          href := "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css",
+          integrity := "sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM",
+          crossorigin := "anonymous")),
       body(script(src := "main.js")))
 
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
@@ -43,17 +53,15 @@ object VolatilityServer extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] = {
     Executors
-      .newSingleThreadExecutor()
-      .submit((() => updateCache()): Runnable)
-//      .newSingleThreadScheduledExecutor()
-//      .scheduleAtFixedRate(() => updateCache(), 0, 10, TimeUnit.SECONDS)
-
-    println("SYSTEM PORT -----> " + sys.env.get("PORT").toString)
+//      .newSingleThreadExecutor()
+//      .submit((() => updateCache()): Runnable)
+      .newSingleThreadScheduledExecutor()
+      .scheduleAtFixedRate(() => updateCache(), 0, 10, TimeUnit.SECONDS)
 
     EmberServerBuilder
       .default[IO]
       .withHost(ipv4"0.0.0.0")
-      .withPort(com.comcast.ip4s.Port.fromString(sys.env.getOrElse("PORT", "80")).get)
+      .withPort(Port.fromString(sys.env.getOrElse("PORT", "8080")).get)
       .withHttpApp(service.orNotFound)
       .build
       .use(_ => IO.never)
