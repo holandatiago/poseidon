@@ -1,6 +1,13 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "2.13.11"
-Compile / run := (back / Compile / run).evaluated
+Compile / run := (back / Compile / run)
+  .dependsOn(
+      Def.task { IO.copyDirectory(
+          (front / Compile / fullLinkJS / scalaJSLinkerOutputDirectory).value,
+          (back / Compile / classDirectory).value) }
+        .dependsOn(back / Compile / compile)
+        .dependsOn(front / Compile / fullLinkJS))
+  .evaluated
 
 lazy val back = project
   .enablePlugins(JavaAppPackaging)
@@ -18,8 +25,6 @@ lazy val back = project
     libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % "10.5.0",
 //    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.7",
     libraryDependencies += "org.scalanlp" %% "breeze" % "2.1.0",
-    Compile / resourceDirectory := (front / Compile / fullLinkJS / scalaJSLinkerOutputDirectory).value,
-    Compile / unmanagedResources := (Compile / unmanagedResources).dependsOn(front / Compile / fullLinkJS).value,
   )
 
 lazy val front = project

@@ -25,7 +25,7 @@ object Client {
 
   def main(args: Array[String]): Unit = {
     render(dom.document.head, titleTag("Nettuno"))
-    render(dom.document.head, linkTag(rel := "icon", tpe := "image/x-icon", href := "images/trident-black.png"))
+    render(dom.document.head, linkTag(rel := "icon", tpe := "image/x-icon", href := "trident-black.png"))
     renderOnDomContentLoaded(dom.document.body, appElement())
   }
 
@@ -42,7 +42,7 @@ object Client {
   def navbar(): HtmlElement = {
     div(cls := "navbar sticky-top bg-dark shadow p-1",
       a(cls := "navbar-brand text-white d-flex align-items-center gap-2 px-3 fs-7", href := "",
-        img(width := "32", height := "32", src := "images/trident-white.png"), "NETTUNO"))
+        img(width := "32", height := "32", src := "trident-white.png"), "NETTUNO"))
   }
 
   def sidebar(): HtmlElement = {

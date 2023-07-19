@@ -21,9 +21,12 @@ import scala.jdk.CollectionConverters._
 object VolatilityServer extends IOApp {
   val cache = new ConcurrentHashMap[String, UnderlyingAsset]()
 
-  val indexPage: TypedTag[String] =
+  val indexPage: TypedTag[String] = {
     html(
+      lang := "en",
       head(
+        meta(charset := "utf-8"),
+        meta(name := "viewport", content := "width=device-width, initial-scale=1"),
         script(
           src := "https://cdn.plot.ly/plotly-basic-2.24.2.min.js"),
         script(
@@ -36,6 +39,7 @@ object VolatilityServer extends IOApp {
           integrity := "sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM",
           crossorigin := "anonymous")),
       body(script(src := "main.js")))
+  }
 
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(indexPage)
