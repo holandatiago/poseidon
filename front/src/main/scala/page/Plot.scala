@@ -21,7 +21,7 @@ object Plot {
       error_y = literal(color = "seagreen", opacity = .5), hoverinfo = "text"),
     literal(name = "PUT", `type` = "scatter", mode = "markers", marker = literal(color = "royalblue"),
       error_y = literal(color = "royalblue", opacity = .5), hoverinfo = "text"),
-    literal(name = "fitted", `type` = "scatter", mode = "lines",
+    literal(name = "SSVI", `type` = "scatter", mode = "lines",
       line = literal(color = "orangered", shape = "spline"), hoverinfo = "x+y"))
 
   def renderDataChart(): Element = {
