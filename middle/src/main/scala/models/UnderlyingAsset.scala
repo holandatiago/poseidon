@@ -9,7 +9,7 @@ case class UnderlyingAsset(
     fittedSurface: VolatilitySurface = null) {
 
   def withOptionList(optionList: List[OptionContract]): UnderlyingAsset = copy(
-    options = optionList.filter(_.isValid).sortBy(_.symbol).map(_.withAssetPrice(this)))
+    options = optionList.map(_.withAssetPrice(this)).filter(_.isValid).sortBy(_.symbol))
 
   def isValid: Boolean = options.nonEmpty
 }
